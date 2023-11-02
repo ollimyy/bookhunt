@@ -1,10 +1,11 @@
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Circle } from "react-native-maps";
 import * as Location from 'expo-location';
 import { useState, useEffect } from "react";
 import { Alert, View, Button, StyleSheet, Modal } from "react-native";
+import { getDatabase, ref, onValue } from "firebase/database"
 import BookdropForm from "../components/BookdropForm";
 
-export default function Map(app) {
+export default function Map({ app }) {
 
     const [userLocation, setUserLocation] = useState(null);
     const [mapRegion, setMapRegion] = useState({
@@ -14,6 +15,8 @@ export default function Map(app) {
         longitudeDelta: 0.011,
     })
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const [bookdrops, setBookdrops] = useState([]);
+    const database = getDatabase(app);
 
 
     useEffect(() => {
@@ -36,7 +39,25 @@ export default function Map(app) {
                 latitude: userLocation.coords.latitude,
                 longitude: userLocation.coords.longitude,
             }))
-        })();
+        });
+    }, []);
+
+    useEffect(() => {
+        const bookdropsRef = ref(database, 'bookdrops/');
+
+        const unsubscribe = onValue(bookdropsRef, (snapshot) => {
+            const data = snapshot.val();
+
+            if(data) {
+                setBookdrops(data);
+            }
+        
+        });
+        
+        return () => {
+            unsubscribe();
+        }
+
     }, []);
 
     const handleCreateBookdrop = () => {
@@ -46,8 +67,27 @@ export default function Map(app) {
     return (
         <View style={{ flex: 1 }}>
             <MapView style={{ flex: 1 }} showsUserLocation={true} region={mapRegion}>
-                {/* You can add markers for existing bookdrops here */}
+            
+            {Object.keys(bookdrops).map((bookdropId) => {
+                const bookdrop = bookdrops[bookdropId];
+
+                return(
+                    <Circle 
+                        key={bookdropId}
+                        center={{
+                            latitude: bookdrop.latitude,
+                            longitude: bookdrop.longitude,
+                        }}
+                        radius={10}
+                        strokeWidth={2}
+                        strokeColor="rgba(0, 0, 255, 0.5)"
+                        fillColor="rgba(0,0, 255, 0.2)"
+                    />
+                );
+            })}
             </MapView>
+
+
             <View style={styles.buttonContainer}>
                 <Button title="Create Bookdrop" onPress={handleCreateBookdrop} />
             </View>
