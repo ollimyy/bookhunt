@@ -1,17 +1,20 @@
 import MapView, { Marker } from "react-native-maps";
 import * as Location from 'expo-location';
 import { useState, useEffect } from "react";
-import { Alert } from "react-native";
+import { Alert, View, Button, StyleSheet, Modal } from "react-native";
+import BookdropForm from "../components/BookdropForm";
 
-export default function Map() {
+export default function Map(app) {
 
     const [userLocation, setUserLocation] = useState(null);
     const [mapRegion, setMapRegion] = useState({
-        latitude: '60.192059', 
+        latitude: '60.192059',
         longitude: '24.945831',
         latitudeDelta: 0.012,
         longitudeDelta: 0.011,
     })
+    const [isFormVisible, setIsFormVisible] = useState(false);
+
 
     useEffect(() => {
         // check location permission
@@ -20,7 +23,7 @@ export default function Map() {
             if (status !== 'granted') {
                 Alert.alert('No permission to get location');
 
-                return ;
+                return;
             }
 
             // get location
@@ -36,11 +39,30 @@ export default function Map() {
         })();
     }, []);
 
+    const handleCreateBookdrop = () => {
+        setIsFormVisible(true);
+    };
+
     return (
-        <MapView
-            style={{ flex: 1 }}
-            showsUserLocation={ true }
-            region = { mapRegion }>
-        </MapView>
-    )
+        <View style={{ flex: 1 }}>
+            <MapView style={{ flex: 1 }} showsUserLocation={true} region={mapRegion}>
+                {/* You can add markers for existing bookdrops here */}
+            </MapView>
+            <View style={styles.buttonContainer}>
+                <Button title="Create Bookdrop" onPress={handleCreateBookdrop} />
+            </View>
+
+            <Modal visible={isFormVisible} animationType="slide">
+                <BookdropForm onClose={() => setIsFormVisible(false)} userLocation={userLocation} />
+            </Modal>
+        </View>
+    );
 }
+
+const styles = StyleSheet.create({
+    buttonContainer: {
+        position: 'absolute',
+        bottom: 16,
+        right: 16,
+    },
+});
