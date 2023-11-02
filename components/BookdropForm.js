@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { getDatabase, push, ref, onValue } from 'firebase/database'
+import { getDatabase, push, ref } from 'firebase/database'
 
 export default function BookdropForm({ onClose, userLocation, app }) {
   const [bookISBN, setBookISBN] = useState('');
@@ -12,8 +12,8 @@ export default function BookdropForm({ onClose, userLocation, app }) {
     const bookdropData = {
       bookISBN,
       clue,
-      latitude: userLocation.coords.latitude,
-      longitude: userLocation.coords.longitude,
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
     };
 
     push(ref(database, 'bookdrops/'), bookdropData)
@@ -30,14 +30,14 @@ export default function BookdropForm({ onClose, userLocation, app }) {
       <TextInput
         style={styles.input}
         placeholder="Latitude"
-        value={userLocation ? userLocation.coords.latitude.toString() : ''}
+        value={userLocation ? userLocation.latitude.toString() : ''}
         editable={false}
       />
 
       <TextInput
         style={styles.input}
         placeholder="Longitude"
-        value={userLocation ? userLocation.coords.longitude.toString() : ''}
+        value={userLocation ? userLocation.longitude.toString() : ''}
         editable={false}
       />
 

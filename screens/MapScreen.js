@@ -18,30 +18,41 @@ export default function Map({ app }) {
     const [bookdrops, setBookdrops] = useState([]);
     const database = getDatabase(app);
 
+    const getUserLocation = async () => {
+        try {
+          // Check location permission
+          let { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('No permission to get location');
+            return null; // Return null if permission is not granted
+          }
+      
+          // Get location
+          let userLocation = await Location.getCurrentPositionAsync();
+          return userLocation.coords; // Return the user's location coordinates
+        } catch (error) {
+          // Handle any potential errors here
+          console.error('Error getting location:', error);
+          return null; // Return null in case of an error
+        }
+    };
 
     useEffect(() => {
-        // check location permission
-        (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('No permission to get location');
-
-                return;
-            }
-
-            // get location
-            let userLocation = await Location.getCurrentPositionAsync({});
-            setUserLocation(userLocation);
-
-            // center map on user's location
-            setMapRegion(prevRegion => ({
-                ...prevRegion,
-                latitude: userLocation.coords.latitude,
-                longitude: userLocation.coords.longitude,
-            }))
-        });
-    }, []);
-
+        const setupLocationAndMapRegion = async () => {
+          const locationCoords = await getUserLocation();
+          if (locationCoords) {
+            setMapRegion((prevRegion) => ({
+              ...prevRegion,
+              latitude: locationCoords.latitude,
+              longitude: locationCoords.longitude,
+            }));
+          }
+        };
+      
+        // Call the async function to set up location and map region
+        setupLocationAndMapRegion();
+      }, []);
+      
     useEffect(() => {
         const bookdropsRef = ref(database, 'bookdrops/');
 
@@ -57,11 +68,17 @@ export default function Map({ app }) {
         return () => {
             unsubscribe();
         }
-
     }, []);
 
-    const handleCreateBookdrop = () => {
-        setIsFormVisible(true);
+    const handleCreateBookdrop = async () => {
+        const locationCoords = await getUserLocation();
+        
+        if (locationCoords) {
+            setUserLocation(locationCoords);
+            setIsFormVisible(true);
+        } else {
+            Alert.alert('Location data needed to create a bookdrop.');
+        }
     };
 
     return (
@@ -78,7 +95,7 @@ export default function Map({ app }) {
                             latitude: bookdrop.latitude,
                             longitude: bookdrop.longitude,
                         }}
-                        radius={10}
+                        radius={50}
                         strokeWidth={2}
                         strokeColor="rgba(0, 0, 255, 0.5)"
                         fillColor="rgba(0,0, 255, 0.2)"
