@@ -1,4 +1,4 @@
-import MapView, { Circle } from "react-native-maps";
+import MapView, { Circle, Marker } from "react-native-maps";
 import * as Location from 'expo-location';
 import { useState, useEffect } from "react";
 import { Alert, View, Button, StyleSheet, Modal } from "react-native";
@@ -81,6 +81,10 @@ export default function Map({ app }) {
         }
     };
 
+    const handleMarkerPress = (bookdropId) => {
+        Alert.alert(bookdropId)
+    }
+
     return (
         <View style={{ flex: 1 }}>
             <MapView style={{ flex: 1 }} showsUserLocation={true} region={mapRegion}>
@@ -89,8 +93,16 @@ export default function Map({ app }) {
                 const bookdrop = bookdrops[bookdropId];
 
                 return(
-                    <Circle 
-                        key={bookdropId}
+                    <View key={bookdropId}>
+                    <Marker
+                        coordinate={{
+                            latitude: bookdrop.latitude,
+                            longitude: bookdrop.longitude,
+                        }}
+                        onPress={() => handleMarkerPress(bookdropId)}
+                    />
+
+                    <Circle
                         center={{
                             latitude: bookdrop.latitude,
                             longitude: bookdrop.longitude,
@@ -99,7 +111,8 @@ export default function Map({ app }) {
                         strokeWidth={2}
                         strokeColor="rgba(0, 0, 255, 0.5)"
                         fillColor="rgba(0,0, 255, 0.2)"
-                    />
+                        />
+                    </View>
                 );
             })}
             </MapView>
