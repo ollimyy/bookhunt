@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { getDatabase, push, ref } from 'firebase/database'
+import Bookdrop from '../models/Bookdrop';
 
 export default function BookdropForm({ onClose, userLocation, app }) {
   const [bookISBN, setBookISBN] = useState('');
@@ -9,14 +10,14 @@ export default function BookdropForm({ onClose, userLocation, app }) {
   const database = getDatabase(app);
 
   const submitBookdrop = () => {
-    const bookdropData = {
+    const newBookdrop = new Bookdrop(
       bookISBN,
+      userLocation.longitude,
+      userLocation.latitude,
       clue,
-      latitude: userLocation.latitude,
-      longitude: userLocation.longitude,
-    };
+    );
 
-    push(ref(database, 'bookdrops/'), bookdropData)
+    push(ref(database, 'bookdrops/'), newBookdrop)
       .then(() => {
         onClose();
       })
