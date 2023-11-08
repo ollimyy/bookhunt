@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { getDatabase, push, ref } from 'firebase/database'
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+
 import Bookdrop from '../models/Bookdrop';
 
 export default function BookdropForm({ onClose, userLocation, app }) {
   const [bookISBN, setBookISBN] = useState('');
-  const [clue, setClue] = useState(''); // Add state for the clue
+  const [clue, setClue] = useState('');
 
-  const database = getDatabase(app);
+  const database = getFirestore(app);
 
   const submitBookdrop = () => {
     const newBookdrop = new Bookdrop(
@@ -17,13 +18,19 @@ export default function BookdropForm({ onClose, userLocation, app }) {
       clue,
     );
 
-    push(ref(database, 'bookdrops/'), newBookdrop)
-      .then(() => {
-        onClose();
-      })
-      .catch((error) => {
-        console.error('Error saving bookdrop: ', error);
-      })
+    const bookdropsCollection = collection(database, 'bookdrops');
+
+    addDoc(bookdropsCollection, {
+      ...newBookdrop,
+      created_at: serverTimestamp(),
+    })
+    .then(() => {
+      onClose();
+    })
+    .catch((error) => {
+      console.error('Error saving bookdrop: ', error)
+    })
+  
   };
 
   return (
