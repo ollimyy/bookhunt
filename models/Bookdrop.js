@@ -1,8 +1,8 @@
 class Bookdrop {
-    constructor(bookISBN, longitude, latitude, clue) {
-        this.bookISBN = bookISBN,
+    constructor(longitude, latitude, book, clue) {
         this.longitude = longitude,
         this.latitude = latitude,
+        this.book = book,
         this.clue = clue,
         this.collected_at = null
     }

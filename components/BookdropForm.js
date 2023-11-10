@@ -1,36 +1,56 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, doc, serverTimestamp, updateDoc, arrayUnion } from 'firebase/firestore'
 
+import Book from '../models/Book';
 import Bookdrop from '../models/Bookdrop';
 
 export default function BookdropForm({ onClose, userLocation, app }) {
   const [bookISBN, setBookISBN] = useState('');
+  const [bookTitle, setBookTitle] = useState('');
+  const [bookAuthor, setBookAuthor] = useState('');
   const [clue, setClue] = useState('');
 
   const database = getFirestore(app);
 
-  const submitBookdrop = () => {
-    const newBookdrop = new Bookdrop(
-      bookISBN,
-      userLocation.longitude,
-      userLocation.latitude,
-      clue,
-    );
+  const submitBookdrop = async () => {
+    try {
+      // create the book
+      const newBook = new Book(bookISBN, bookTitle, bookAuthor);
 
-    const bookdropsCollection = collection(database, 'bookdrops');
+      // add the book to the database
+      const booksCollection = collection(database, 'books');
+      bookDocRef = await addDoc(booksCollection, {
+        ...newBook,
+        created_at: serverTimestamp(),
+      })
 
-    addDoc(bookdropsCollection, {
-      ...newBookdrop,
-      created_at: serverTimestamp(),
-    })
-    .then(() => {
+      // create bookdrop with reference to book
+      const newBookdrop = new Bookdrop(
+        userLocation.longitude,
+        userLocation.latitude,
+        doc(database, 'books', bookDocRef.id),
+        clue
+      );
+
+      // add bookdrop to database
+      const bookdropsCollection = collection(database, 'bookdrops');
+      addDoc(bookdropsCollection, {
+        ...newBookdrop,
+        created_at: serverTimestamp(),
+      })
+
+      // add the bookdrop to the book doc
+      await updateDoc(bookDocRef, {
+        bookdrops: arrayUnion(doc(database, 'bookdrops', bookDocRef.id))
+      });
+
       onClose();
-    })
-    .catch((error) => {
+
+    } catch (error) {
       console.error('Error saving bookdrop: ', error)
-    })
-  
+    }
+
   };
 
   return (
@@ -54,6 +74,20 @@ export default function BookdropForm({ onClose, userLocation, app }) {
         placeholder="Enter Book ISBN"
         onChangeText={(text) => setBookISBN(text)}
         value={bookISBN}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Title"
+        onChangeText={(text) => setBookTitle(text)}
+        value={bookTitle}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Author"
+        onChangeText={(text) => setBookAuthor(text)}
+        value={bookAuthor}
       />
 
       <TextInput
