@@ -5,23 +5,18 @@ import { getFirestore, collection, addDoc, doc, serverTimestamp, updateDoc, arra
 import Book from '../models/Book';
 import Bookdrop from '../models/Bookdrop';
 
-export default function BookdropForm({ onClose, userLocation, app }) {
-  const [bookISBN, setBookISBN] = useState('');
-  const [bookTitle, setBookTitle] = useState('');
-  const [bookAuthor, setBookAuthor] = useState('');
+export default function BookdropForm({ onClose, userLocation, selectedBook, app }) {
   const [clue, setClue] = useState('');
 
   const database = getFirestore(app);
 
   const submitBookdrop = async () => {
     try {
-      // create the book
-      const newBook = new Book(bookISBN, bookTitle, bookAuthor);
 
       // add the book to the database
       const booksCollection = collection(database, 'books');
       bookDocRef = await addDoc(booksCollection, {
-        ...newBook,
+        ...selectedBook,
         created_at: serverTimestamp(),
       })
 
@@ -71,23 +66,26 @@ export default function BookdropForm({ onClose, userLocation, app }) {
 
       <TextInput
         style={styles.input}
-        placeholder="Enter Book ISBN"
+        placeholder="ISBN"
         onChangeText={(text) => setBookISBN(text)}
-        value={bookISBN}
+        value={selectedBook.isbn}
+        editable={false}
       />
 
       <TextInput
         style={styles.input}
         placeholder="Title"
         onChangeText={(text) => setBookTitle(text)}
-        value={bookTitle}
+        value={selectedBook.title}
+        editable={false}
       />
 
       <TextInput
         style={styles.input}
         placeholder="Author"
         onChangeText={(text) => setBookAuthor(text)}
-        value={bookAuthor}
+        value={selectedBook.author}
+        editable={false}
       />
 
       <TextInput

@@ -2,10 +2,11 @@ import MapView, { Circle, Marker } from "react-native-maps";
 import * as Location from 'expo-location';
 import { useState, useEffect } from "react";
 import { Alert, View, Button, StyleSheet, Modal, } from "react-native";
-import { getFirestore, collection, query, onSnapshot, where, doc  } from "firebase/firestore";
+import { getFirestore, collection, query, onSnapshot, where, doc } from "firebase/firestore";
 
 import BookdropForm from "../components/BookdropForm";
 import CollectForm from "../components/CollectForm";
+import ChooseBookForm from "../components/ChooseBookForm";
 
 export default function Map({ app }) {
 
@@ -19,6 +20,8 @@ export default function Map({ app }) {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [bookdrops, setBookdrops] = useState([]);
     const [selectedBookdrop, setSelectedBookdrop] = useState(null);
+    const [selectedBook, setSelectedBook] = useState(null);
+
 
     const getUserLocation = async () => {
         try {
@@ -99,37 +102,47 @@ export default function Map({ app }) {
         }
     };
 
+    const handleBookSelected = (book) => {
+        setSelectedBook(book);
+    };
+
+    const handleClose = () => {
+        setIsFormVisible(false);
+        setSelectedBook(null);
+    };
+
+
     return (
         <View style={{ flex: 1 }}>
             <MapView style={{ flex: 1 }} showsUserLocation={true} region={mapRegion}>
 
                 { // create markers and circles for bookdrops that can be collected
-                Object.keys(bookdrops).map((bookdropId) => {
-                    const bookdrop = bookdrops[bookdropId];
+                    Object.keys(bookdrops).map((bookdropId) => {
+                        const bookdrop = bookdrops[bookdropId];
 
-                    return (
-                        <View key={bookdrop.id}>
-                            <Marker
-                                coordinate={{
-                                    latitude: bookdrop.latitude,
-                                    longitude: bookdrop.longitude,
-                                }}
-                                onPress={() => handleBookdropPress(bookdrop.id)}
-                            />
+                        return (
+                            <View key={bookdrop.id}>
+                                <Marker
+                                    coordinate={{
+                                        latitude: bookdrop.latitude,
+                                        longitude: bookdrop.longitude,
+                                    }}
+                                    onPress={() => handleBookdropPress(bookdrop.id)}
+                                />
 
-                            <Circle
-                                center={{
-                                    latitude: bookdrop.latitude,
-                                    longitude: bookdrop.longitude,
-                                }}
-                                radius={50}
-                                strokeWidth={2}
-                                strokeColor="rgba(0, 0, 255, 0.5)"
-                                fillColor="rgba(0,0, 255, 0.2)"
-                            />
-                        </View>
-                    );
-                })}
+                                <Circle
+                                    center={{
+                                        latitude: bookdrop.latitude,
+                                        longitude: bookdrop.longitude,
+                                    }}
+                                    radius={50}
+                                    strokeWidth={2}
+                                    strokeColor="rgba(0, 0, 255, 0.5)"
+                                    fillColor="rgba(0,0, 255, 0.2)"
+                                />
+                            </View>
+                        );
+                    })}
             </MapView>
 
             <View style={styles.buttonContainer}>
@@ -137,14 +150,22 @@ export default function Map({ app }) {
             </View>
 
             <Modal visible={isFormVisible} animationType="slide">
-                <BookdropForm onClose={() => setIsFormVisible(false)} userLocation={userLocation} />
+                {selectedBook === null ? (
+                    <ChooseBookForm onBookSelected={handleBookSelected} onClose={handleClose} />
+                ) : (
+                    <BookdropForm
+                        onClose={handleClose}
+                        selectedBook={selectedBook}
+                        userLocation={userLocation}
+                    />
+                )}
             </Modal>
 
             <Modal visible={selectedBookdrop !== null} animationType="slide">
-                <CollectForm 
+                <CollectForm
                     onClose={() => setSelectedBookdrop(null)}
                     userLocation={userLocation}
-                    bookdropId={selectedBookdrop}  
+                    bookdropId={selectedBookdrop}
                 />
             </Modal>
         </View>

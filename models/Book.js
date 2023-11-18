@@ -1,7 +1,7 @@
 class Book {
     constructor(isbn, title, author) {
         this.code = this.generateCode(),
-        this.isbn = isbn
+        this.isbn = isbn,
         this.title = title,
         this.author = author,
         this.bookdrops = []
