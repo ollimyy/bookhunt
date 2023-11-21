@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { getFirestore, collection, addDoc, doc, serverTimestamp, updateDoc, arrayUnion } from 'firebase/firestore'
 
-import Book from '../models/Book';
 import Bookdrop from '../models/Bookdrop';
 
-export default function BookdropForm({ onClose, userLocation, selectedBook, app }) {
+export default function BookdropForm({ onClose, onBookdropCreated, userLocation, selectedBook, app }) {
   const [clue, setClue] = useState('');
 
   const database = getFirestore(app);
@@ -40,7 +39,7 @@ export default function BookdropForm({ onClose, userLocation, selectedBook, app 
         bookdrops: arrayUnion(doc(database, 'bookdrops', bookDocRef.id))
       });
 
-      onClose();
+      onBookdropCreated();
 
     } catch (error) {
       console.error('Error saving bookdrop: ', error)

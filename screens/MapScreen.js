@@ -1,12 +1,13 @@
 import MapView, { Circle, Marker } from "react-native-maps";
 import * as Location from 'expo-location';
 import { useState, useEffect } from "react";
-import { Alert, View, Button, StyleSheet, Modal, } from "react-native";
+import { Alert, View, Button, StyleSheet, Modal, Text } from "react-native";
 import { getFirestore, collection, query, onSnapshot, where, doc } from "firebase/firestore";
 
 import BookdropForm from "../components/BookdropForm";
 import CollectForm from "../components/CollectForm";
 import ChooseBookForm from "../components/ChooseBookForm";
+import BookdropInstructions from "../components/BookdropInstructions";
 
 export default function Map({ app }) {
 
@@ -21,6 +22,7 @@ export default function Map({ app }) {
     const [bookdrops, setBookdrops] = useState([]);
     const [selectedBookdrop, setSelectedBookdrop] = useState(null);
     const [selectedBook, setSelectedBook] = useState(null);
+    const [bookdropCreated, setBookdropCreated] = useState(false);
 
 
     const getUserLocation = async () => {
@@ -106,9 +108,14 @@ export default function Map({ app }) {
         setSelectedBook(book);
     };
 
+    const handleBookdropCreated = () => {
+        setBookdropCreated(true);
+    }
+
     const handleClose = () => {
         setIsFormVisible(false);
         setSelectedBook(null);
+        setBookdropCreated(false);
     };
 
 
@@ -153,11 +160,19 @@ export default function Map({ app }) {
                 {selectedBook === null ? (
                     <ChooseBookForm onBookSelected={handleBookSelected} onClose={handleClose} />
                 ) : (
-                    <BookdropForm
+                    bookdropCreated ? (
+                            <BookdropInstructions
+                                code={selectedBook.code}
+                                onClose={handleClose}
+                            />
+                        ) : (
+                        <BookdropForm
+                        onBookdropCreated={handleBookdropCreated}
                         onClose={handleClose}
                         selectedBook={selectedBook}
                         userLocation={userLocation}
-                    />
+                        />
+                    )
                 )}
             </Modal>
 
