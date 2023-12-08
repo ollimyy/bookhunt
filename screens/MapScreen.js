@@ -1,8 +1,8 @@
 import MapView, { Circle, Marker } from "react-native-maps";
 import * as Location from 'expo-location';
 import { useState, useEffect } from "react";
-import { Alert, View, Button, StyleSheet, Modal, Text } from "react-native";
-import { getFirestore, collection, query, onSnapshot, where, doc } from "firebase/firestore";
+import { Alert, View, Button, StyleSheet, Modal } from "react-native";
+import { getFirestore, collection, query, onSnapshot, where } from "firebase/firestore";
 
 import BookdropForm from "../components/BookdropForm";
 import CollectForm from "../components/CollectForm";
