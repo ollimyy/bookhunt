@@ -11,7 +11,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Map app={app}/>
-      <StatusBar style="auto" />
+      <StatusBar translucent={false} style='light' />
     </View>
   );
 }
